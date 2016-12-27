@@ -1,5 +1,4 @@
-﻿     
-    using UnityEngine;
+﻿    using UnityEngine;
     using System.Collections;
     using System.Collections.Generic;
      
@@ -46,35 +45,99 @@
      
     namespace UnityEngine.UI
     {
-        [AddComponentMenu("UI/Effects/Letter Spacing", 14)]
+        [AddComponentMenu("UI/Effects/Letter Spacing", 14), RequireComponent(typeof(Text))]
     #if UNITY_5_2
-        public class LetterSpacing : BaseMeshEffect
+        public class LetterSpacing : BaseMeshEffect, ILayoutElement
     #else
-        public class LetterSpacing : BaseVertexEffect
+        public class LetterSpacing : BaseVertexEffect, ILayoutElement
     #endif
         {
-            [SerializeField]
-            private float m_spacing = 0f;
+            [SerializeField] private float m_spacing = 0f;
+     
+            public float spacing
+            {
+                get { return this.m_spacing; }
+                set
+                {
+                    if (this.m_spacing == value) return;
+                    this.m_spacing = value;
+                    if (this.graphic != null) this.graphic.SetVerticesDirty();
+                    LayoutRebuilder.MarkLayoutForRebuild((RectTransform)this.transform);
+                }
+            }
+     
+            private Text text
+            {
+                get { return this.gameObject.GetComponent<Text>(); }
+            }
+     
+            public float minWidth
+            {
+                get { return this.text.minWidth; }
+            }
+     
+            public float preferredWidth
+            {
+                get { return this.text.preferredWidth + ((this.spacing * (float)this.text.fontSize / 100f) * (this.text.text.Length - 1)); }
+            }
+     
+            public float flexibleWidth
+            {
+                get { return this.text.flexibleWidth; }
+            }
+     
+            public float minHeight
+            {
+                get { return this.text.minHeight; }
+            }
+     
+            public float preferredHeight
+            {
+                get { return this.text.preferredHeight; }
+            }
+     
+            public float flexibleHeight
+            {
+                get { return this.text.flexibleHeight; }
+            }
+     
+            public int layoutPriority
+            {
+                get { return this.text.layoutPriority; }
+            }
            
             protected LetterSpacing() { }
            
     #if UNITY_EDITOR
             protected override void OnValidate()
             {
-                spacing = m_spacing;
                 base.OnValidate();
+                this.spacing = this.m_spacing;
+                LayoutRebuilder.MarkLayoutForRebuild((RectTransform)this.transform);
             }
     #endif
-           
-            public float spacing
+     
+            public void CalculateLayoutInputHorizontal() { }
+            public void CalculateLayoutInputVertical() { }
+     
+            private string[] GetLines()
             {
-                get { return m_spacing; }
-                set
+                IList<UILineInfo> lineInfos = text.cachedTextGenerator.lines;
+                string[] lines = new string[lineInfos.Count];
+     
+                for (int i = 0; i < lineInfos.Count; i++)
                 {
-                    if (m_spacing == value) return;
-                    m_spacing = value;
-                    if (graphic != null) graphic.SetVerticesDirty();
+                    if ((i + 1) < lineInfos.Count)
+                    {
+                        lines[i] = this.text.text.Substring(lineInfos[i].startCharIdx, lineInfos[i + 1].startCharIdx - 1);
+                    }
+                    else
+                    {
+                        lines[i] = this.text.text.Substring(lineInfos[i].startCharIdx);
+                    }
                 }
+     
+                return lines;
             }
      
     #if UNITY_5_2
@@ -89,7 +152,7 @@
                     vertexHelper.GetUIVertexStream(list);
                 }
      
-                ModifyVertices(list);  // calls the old ModifyVertices which was used on pre 5.2
+                this.ModifyVertices(list);  // calls the old ModifyVertices which was used on pre 5.2
      
                 using (VertexHelper vertexHelper2 = new VertexHelper())
                 {
@@ -102,22 +165,16 @@
     #if UNITY_5_2
             public void ModifyVertices(List<UIVertex> verts)
             {
-                if (!IsActive()) return;
-     
-                Text text = GetComponent<Text>();
-                if (text == null)
-                {
-                    Debug.LogWarning("LetterSpacing: Missing Text component");
-                    return;
-                }
-     
-                string[] lines = text.text.Split('\n');
+                if (!this.IsActive()) return;
+               
+                string[] lines = this.GetLines();
+               
                 Vector3 pos;
-                float letterOffset = spacing * (float)text.fontSize / 100f;
+                float letterOffset = this.spacing * (float)this.text.fontSize / 100f;
                 float alignmentFactor = 0;
                 int glyphIdx = 0;
      
-                switch (text.alignment)
+                switch (this.text.alignment)
                 {
                     case TextAnchor.LowerLeft:
                     case TextAnchor.MiddleLeft:
@@ -141,7 +198,7 @@
                 for (int lineIdx = 0; lineIdx < lines.Length; lineIdx++)
                 {
                     string line = lines[lineIdx];
-                    float lineOffset = (line.Length - 1) * letterOffset * alignmentFactor;
+                    float lineOffset = ((line.Length - 1) * letterOffset) * alignmentFactor;
      
                     for (int charIdx = 0; charIdx < line.Length; charIdx++)
                     {
@@ -162,7 +219,7 @@
                         UIVertex vert5 = verts[idx5];
                         UIVertex vert6 = verts[idx6];
      
-                        pos = Vector3.right * (letterOffset * charIdx - lineOffset);
+                        pos = Vector3.right * ((letterOffset * charIdx) - lineOffset);
      
                         vert1.position += pos;
                         vert2.position += pos;
@@ -188,22 +245,16 @@
     #else
             public override void ModifyVertices(List<UIVertex> verts)
             {
-                if (! IsActive()) return;
+                if (!this.IsActive()) return;
                
-                Text text = GetComponent<Text>();
-                if (text == null)
-                {
-                    Debug.LogWarning("LetterSpacing: Missing Text component");
-                    return;
-                }
-               
-                string[] lines = text.text.Split('\n');
+                string[] lines = this.GetLines();
+     
                 Vector3  pos;
-                float    letterOffset    = spacing * (float)text.fontSize / 100f;
+                float    letterOffset    = this.spacing * (float)this.text.fontSize / 100f;
                 float    alignmentFactor = 0;
                 int      glyphIdx        = 0;
                
-                switch (text.alignment)
+                switch (this.text.alignment)
                 {
                 case TextAnchor.LowerLeft:
                 case TextAnchor.MiddleLeft:
@@ -266,4 +317,3 @@
     #endif
         }
     }
-     
