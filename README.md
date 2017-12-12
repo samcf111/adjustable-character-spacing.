@@ -1,5 +1,5 @@
-**Adjustable Character Spacing** -
-http://forum.unity3d.com/threads/adjustable-character-spacing-free-script.288277/
+**Adjustable Character Spacing** -   
+http://forum.unity3d.com/threads/adjustable-character-spacing-free-script.288277/   
 free Unity script, was originally written by   
 Chris Underwood (Deeperbeige)   
 http://deeperbeige.com/
