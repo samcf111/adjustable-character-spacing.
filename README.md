@@ -1,9 +1,9 @@
-**Adjustable Character Spacing** -    
+**Adjustable Character Spacing** -
+http://forum.unity3d.com/threads/adjustable-character-spacing-free-script.288277/
 free Unity script, was originally written by   
 Chris Underwood (Deeperbeige)   
 http://deeperbeige.com/
-
-    http://forum.unity3d.com/threads/adjustable-character-spacing-free-script.288277/
+    
     Unity 5.4+ compatible version
     Produces an simple tracking/letter-spacing effect on UI Text components.
     Set the spacing parameter to adjust letter spacing.
