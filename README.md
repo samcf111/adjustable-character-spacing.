@@ -37,3 +37,4 @@ http://deeperbeige.com/
      
     Now component works with RichText. You need to remember to turn on RichText via the checkbox
     (text.supportRichText) and turn on component's [useRichText] checkbox.
+    
